@@ -65,5 +65,28 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v6
         with:
+          context: .
+          file: ./Dockerfile
           push: true
-          tags: user/app:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }/hello-world:${{github.run_id}}
+
+  update-helm:
+    runs-on: ubuntu-latest
+    needs: docker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          tokens: ${{ secrets.TOKEN }}
+
+      - name: update tag in helm
+        run: |
+         sed -i 's/tag: .*/tag:"${{github.run_id}}"/' heml/hello-node-chart/values.yaml
+      - name: commit and push
+        run: |
+          git config --global user.email "pavansingh3000@gmail.com"
+          git config --global user.name "pavan-3000"
+          git add helm/hello-node-chart/values.yaml
+          git commit -m "valuse tag updated"
+          git push
