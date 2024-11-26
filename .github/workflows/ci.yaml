@@ -42,33 +42,33 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
   docker:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      -
-        name: Set up QEMU
+
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-     
-      -
-        name: Login to Docker Hub
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }/hello-world:${{github.run_id}}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/hello-world:${{ github.run_id }}
 
   update-helm:
     runs-on: ubuntu-latest
@@ -77,16 +77,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          tokens: ${{ secrets.TOKEN }}
 
-      - name: update tag in helm
+      - name: Update tag in Helm
         run: |
-         sed -i 's/tag: .*/tag:"${{github.run_id}}"/' heml/hello-node-chart/values.yaml
-      - name: commit and push
+          sed -i 's/tag: .*/tag: "${{ github.run_id }}"/' helm/hello-node-chart/values.yaml
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.email "pavansingh3000@gmail.com"
           git config --global user.name "pavan-3000"
           git add helm/hello-node-chart/values.yaml
-          git commit -m "valuse tag updated"
+          git commit -m "Updated Helm chart tag to ${{ github.run_id }}"
           git push
