@@ -1,6 +1,3 @@
-# Updated documentation content without configuration details
-
-documentation_content = """
 # DevOps Project Documentation: CI/CD Pipeline with Docker, Kubernetes, Helm, GitHub Actions, and Argo CD
 ---
 
